@@ -1,0 +1,68 @@
+{
+  "leave_config": [
+    {
+      "leave_type": "sick",
+      "annual_quota": 12,
+      "max_carry_forward": 5,
+      "requires_hr_above_days": 5,
+      "allow_negative_balance": false,
+      "description": "Medical & illness recovery leave"
+    },
+    {
+      "leave_type": "casual",
+      "annual_quota": 12,
+      "max_carry_forward": 0,
+      "requires_hr_above_days": 3,
+      "allow_negative_balance": false,
+      "description": "Short personal or urgent leave"
+    },
+    {
+      "leave_type": "earned",
+      "annual_quota": 18,
+      "max_carry_forward": 10,
+      "requires_hr_above_days": 5,
+      "allow_negative_balance": false,
+      "description": "Planned vacation & earned leave"
+    },
+    {
+      "leave_type": "unpaid",
+      "annual_quota": 30,
+      "max_carry_forward": 0,
+      "requires_hr_above_days": 1,
+      "allow_negative_balance": true,
+      "description": "Leave without pay (requires HR approval)"
+    }
+  ],
+  "sample_balances": [
+    {
+      "employee_id": "EMP001",
+      "leave_type_year": "sick#2026",
+      "leave_type": "sick",
+      "year": 2026,
+      "total_quota": 12,
+      "used": 2,
+      "remaining": 10,
+      "carry_forward": 0
+    },
+    {
+      "employee_id": "EMP001",
+      "leave_type_year": "casual#2026",
+      "leave_type": "casual",
+      "year": 2026,
+      "total_quota": 12,
+      "used": 1,
+      "remaining": 11,
+      "carry_forward": 0
+    },
+    {
+      "employee_id": "EMP001",
+      "leave_type_year": "earned#2026",
+      "leave_type": "earned",
+      "year": 2026,
+      "total_quota": 18,
+      "used": 0,
+      "remaining": 18,
+      "carry_forward": 0
+    }
+  ]
+}

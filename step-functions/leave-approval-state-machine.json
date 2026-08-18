@@ -1,0 +1,107 @@
+{
+  "Comment": "Serverless Leave Management State Machine with 48h Escalation and Multi-tier Approval",
+  "StartAt": "WaitForManagerApproval",
+  "States": {
+    "WaitForManagerApproval": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "TimeoutSeconds": 172800,
+      "Parameters": {
+        "FunctionName": "notifyManagerWithToken",
+        "Payload": {
+          "taskToken.$": "$$.Task.Token",
+          "request.$": "$"
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.Timeout"],
+          "Next": "EscalateToHR"
+        }
+      ],
+      "Next": "CheckManagerDecision"
+    },
+    "EscalateToHR": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "notifyHREscalation",
+        "Payload": {
+          "request.$": "$",
+          "reason": "Manager approval timed out after 48 hours"
+        }
+      },
+      "Next": "WaitForHRApproval"
+    },
+    "CheckManagerDecision": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.decision",
+          "StringEquals": "rejected",
+          "Next": "NotifyRejected"
+        },
+        {
+          "Variable": "$.num_days",
+          "NumericGreaterThan": 5,
+          "Next": "WaitForHRApproval"
+        }
+      ],
+      "Default": "UpdateBalanceAndApprove"
+    },
+    "WaitForHRApproval": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "notifyHRWithToken",
+        "Payload": {
+          "taskToken.$": "$$.Task.Token",
+          "request.$": "$"
+        }
+      },
+      "Next": "CheckHRDecision"
+    },
+    "CheckHRDecision": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.decision",
+          "StringEquals": "rejected",
+          "Next": "NotifyRejected"
+        }
+      ],
+      "Default": "UpdateBalanceAndApprove"
+    },
+    "UpdateBalanceAndApprove": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "updateBalanceAndNotify",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "request_id.$": "$.request_id",
+          "leave_type.$": "$.leave_type",
+          "num_days.$": "$.num_days",
+          "decision": "approved"
+        }
+      },
+      "End": true
+    },
+    "NotifyRejected": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "notifyRejected",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "request_id.$": "$.request_id",
+          "leave_type.$": "$.leave_type",
+          "num_days.$": "$.num_days",
+          "decision": "rejected",
+          "reason.$": "$.reason"
+        }
+      },
+      "End": true
+    }
+  }
+}
