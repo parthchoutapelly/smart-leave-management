@@ -35,7 +35,14 @@ exports.handler = async (event) => {
     const requestId = `REQ-${Date.now()}-${randomUUID().substring(0, 5)}`;
     const currentYear = new Date(start_date).getFullYear() || 2026;
 
-    // 1. Fetch balance
+    // 1. Fetch leave configuration
+    const configResult = await ddb.send(new GetCommand({
+      TableName: process.env.LEAVE_CONFIG_TABLE || "leave_config",
+      Key: { leave_type }
+    }));
+    const allowNegativeBalance = configResult.Item?.allow_negative_balance ?? false;
+
+    // 2. Fetch balance
     const balanceResult = await ddb.send(new GetCommand({
       TableName: process.env.LEAVE_BALANCES_TABLE || "leave_balances",
       Key: { employee_id, leave_type_year: `${leave_type}#${currentYear}` }
@@ -43,8 +50,8 @@ exports.handler = async (event) => {
 
     const remaining = balanceResult.Item?.remaining ?? 0;
 
-    // 2. Validate sufficient balance
-    if (remaining < numDays) {
+    // 3. Validate sufficient balance
+    if (!allowNegativeBalance && remaining < numDays) {
       await ddb.send(new PutCommand({
         TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
         Item: {
@@ -76,7 +83,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // 3. Check for overlapping approved leave
+    // 4. Check for overlapping approved leave
     const existing = await ddb.send(new QueryCommand({
       TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
       KeyConditionExpression: "employee_id = :eid",
@@ -122,7 +129,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // 4. Save new request in 'submitted' status
+    // 5. Save new request in 'submitted' status
     await ddb.send(new PutCommand({
       TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
       Item: {
@@ -140,7 +147,7 @@ exports.handler = async (event) => {
       }
     }));
 
-    // 5. Trigger Step Functions execution
+    // 6. Trigger Step Functions execution
     if (process.env.STATE_MACHINE_ARN) {
       await sfn.send(new StartExecutionCommand({
         stateMachineArn: process.env.STATE_MACHINE_ARN,
