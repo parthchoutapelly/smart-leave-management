@@ -13,7 +13,7 @@ This document records the edge cases, business anomalies, and security protectio
 
 ## 2. Overlapping Date Ranges
 - **Scenario:** Employee attempts to book a leave for `2026-08-20` to `2026-08-22` while an approved leave already exists for `2026-08-21` to `2026-08-25`.
-- **Handling:** Lambda queries DynamoDB for existing requests with `status IN ('manager_approved', 'hr_approved', 'approved')` and evaluates `startA <= endB && startB <= endA`. Overlaps trigger automatic rejection with reason `"overlapping leave dates"`.
+- **Handling:** Lambda queries DynamoDB for existing requests with `status = 'approved'` and evaluates `startA <= endB && startB <= endA`. Overlaps trigger automatic rejection with reason `"overlapping leave dates"`.
 - **Verification:** Second request rejected immediately; no notification generated.
 
 ---

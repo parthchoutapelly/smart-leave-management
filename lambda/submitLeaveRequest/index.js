@@ -80,13 +80,11 @@ exports.handler = async (event) => {
     const existing = await ddb.send(new QueryCommand({
       TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
       KeyConditionExpression: "employee_id = :eid",
-      FilterExpression: "#status IN (:app1, :app2, :app3)",
+      FilterExpression: "#status = :app",
       ExpressionAttributeNames: { "#status": "status" },
       ExpressionAttributeValues: {
         ":eid": employee_id,
-        ":app1": "manager_approved",
-        ":app2": "hr_approved",
-        ":app3": "approved"
+        ":app": "approved"
       }
     }));
 

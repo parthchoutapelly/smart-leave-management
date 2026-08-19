@@ -65,17 +65,28 @@ exports.handler = async (event) => {
       })
     }));
 
-    // Update status in DynamoDB
-    await ddb.send(new UpdateCommand({
-      TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
-      Key: { employee_id, request_id },
-      UpdateExpression: "SET #status = :s, updated_at = :t REMOVE sfn_task_token",
-      ExpressionAttributeNames: { "#status": "status" },
-      ExpressionAttributeValues: {
-        ":s": decision === "approved" ? "manager_approved" : "rejected",
-        ":t": new Date().toISOString()
-      }
-    }));
+    // Update DynamoDB record: remove task token; on rejection mark as rejected
+    if (decision === "approved") {
+      await ddb.send(new UpdateCommand({
+        TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
+        Key: { employee_id, request_id },
+        UpdateExpression: "SET updated_at = :t REMOVE sfn_task_token",
+        ExpressionAttributeValues: {
+          ":t": new Date().toISOString()
+        }
+      }));
+    } else {
+      await ddb.send(new UpdateCommand({
+        TableName: process.env.LEAVE_REQUESTS_TABLE || "leave_requests",
+        Key: { employee_id, request_id },
+        UpdateExpression: "SET #status = :s, updated_at = :t REMOVE sfn_task_token",
+        ExpressionAttributeNames: { "#status": "status" },
+        ExpressionAttributeValues: {
+          ":s": "rejected",
+          ":t": new Date().toISOString()
+        }
+      }));
+    }
 
     return {
       statusCode: 200,

@@ -21,7 +21,7 @@ Stores all leave applications submitted by employees across their entire lifecyc
 | `start_date` | String | Start date of leave (YYYY-MM-DD) | `"2026-08-20"` |
 | `end_date` | String | End date of leave (YYYY-MM-DD) | `"2026-08-22"` |
 | `num_days` | Number | Total days requested | `3` |
-| `status` | String | Current workflow status (`submitted`, `manager_approved`, `hr_approved`, `approved`, `rejected`) | `"submitted"` |
+| `status` | String | Current workflow status (`submitted`, `approved`, `rejected`) | `"submitted"` |
 | `manager_id` | String | Reporting manager identifier | `"MGR001"` |
 | `reason` | String | Stated reason for leave | `"Doctor appointment & recovery"` |
 | `rejection_reason` | String | Reason if rejected (optional) | `"insufficient balance"` |
