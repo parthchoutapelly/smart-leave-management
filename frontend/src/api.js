@@ -24,13 +24,25 @@ async function request(endpoint, options = {}) {
 }
 
 export const leaveApi = {
+  // Returns { balances: [...] }  — items have employee_id, leave_type_year, remaining, used, total_quota
   getBalances: (employeeId) => request(`/balances?employee_id=${employeeId}`),
+
+  // Returns { requests: [...] }  — items have request_id, leave_type, start_date, end_date, num_days, status, reason
   getRequests: (employeeId) => request(`/requests?employee_id=${employeeId}`),
+
+  // Returns { status, request_id, message } on success (status="submitted")
+  // Returns { status, request_id, reason, remaining_balance?, requested_days? } on balance/overlap rejection
   submitLeave: (payload) =>
     request("/leaves/submit", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+
+  // TODO: confirm actual API Gateway route for the getPendingApprovals Lambda before deploying
+  // Returns { pending: [...] }
   getPendingApprovals: (managerId) => request(`/manager/pending?manager_id=${managerId}`),
+
+  // TODO: confirm actual API Gateway route for the getApprovedLeaveForTeam Lambda before deploying
+  // Returns { approved_leaves: [...] }
   getApprovedLeaves: () => request("/calendar/approved"),
 };

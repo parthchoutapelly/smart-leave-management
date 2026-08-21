@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 
+/**
+ * Leave application form.
+ *
+ * Props:
+ *   onSubmit(formData)  — called with { leave_type, start_date, end_date, reason }
+ *                         Callers are responsible for adding employee_id and manager_id
+ *                         from the authenticated user context before sending to the API.
+ *   loading             — disables submit button while API call is in-flight
+ */
 export default function ApplyForm({ onSubmit, loading }) {
   const [formData, setFormData] = useState({
     leave_type: 'sick',
     start_date: '',
     end_date: '',
     reason: '',
-    manager_id: 'MGR001'
+    // manager_id is NOT collected here — it comes from the logged-in user's
+    // Cognito profile (user.manager_id) and is injected by the parent component.
   });
 
   const handleSubmit = (e) => {

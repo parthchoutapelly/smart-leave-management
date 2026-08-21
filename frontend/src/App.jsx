@@ -11,19 +11,18 @@ export default function App() {
 
   useEffect(() => {
     const existing = auth.getUser();
-    if (existing) setUser(existing);
+    if (existing) {
+      setUser(existing);
+      setActiveTab(existing.role === 'manager' ? 'manager' : 'employee');
+    }
   }, []);
 
-  const handleLogin = (email, role) => {
-    const newUser = {
-      employee_id: role === 'manager' ? 'MGR001' : 'EMP001',
-      name: role === 'manager' ? 'Rajesh Verma' : 'Priya Sharma',
-      role,
-      email
-    };
-    auth.setUser(newUser);
-    setUser(newUser);
-    setActiveTab(role === 'manager' ? 'manager' : 'employee');
+  // Delegates fully to auth.login() so that employee_id, manager_id, and role
+  // come from the Cognito session record — not from hardcoded ternaries here.
+  const handleLogin = async (email, role) => {
+    const loggedInUser = await auth.login(email, role);
+    setUser(loggedInUser);
+    setActiveTab(loggedInUser.role === 'manager' ? 'manager' : 'employee');
   };
 
   const handleLogout = () => {

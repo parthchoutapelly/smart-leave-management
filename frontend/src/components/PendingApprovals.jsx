@@ -1,6 +1,13 @@
 import React from 'react';
 
-export default function PendingApprovals({ requests, onApprove, onReject, processingId }) {
+/**
+ * Read-only table of leave requests pending manager review.
+ *
+ * Approval and rejection are handled via HMAC-signed links sent to the manager's
+ * inbox by the backend (notifyManagerWithToken Lambda). There are no inline
+ * action buttons in this view.
+ */
+export default function PendingApprovals({ requests }) {
   if (!requests || requests.length === 0) {
     return (
       <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -13,6 +20,9 @@ export default function PendingApprovals({ requests, onApprove, onReject, proces
     <div className="glass-panel" style={{ overflow: 'hidden' }}>
       <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-color)' }}>
         <h3 style={{ fontSize: '1.15rem', fontWeight: 600 }}>Pending Team Approvals</h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+          Approve or reject via the secure link sent to your inbox.
+        </p>
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
@@ -22,7 +32,6 @@ export default function PendingApprovals({ requests, onApprove, onReject, proces
               <th style={{ padding: '12px 16px' }}>Type</th>
               <th style={{ padding: '12px 16px' }}>Duration</th>
               <th style={{ padding: '12px 16px' }}>Reason</th>
-              <th style={{ padding: '12px 16px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -38,42 +47,6 @@ export default function PendingApprovals({ requests, onApprove, onReject, proces
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{req.start_date} to {req.end_date}</div>
                 </td>
                 <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>{req.reason || '-'}</td>
-                <td style={{ padding: '12px 16px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => onApprove(req)}
-                      disabled={processingId === req.request_id}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: 'none',
-                        background: 'var(--color-emerald)',
-                        color: 'white',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => onReject(req)}
-                      disabled={processingId === req.request_id}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: 'none',
-                        background: 'var(--color-rose)',
-                        color: 'white',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </td>
               </tr>
             ))}
           </tbody>
